@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Map from "../lib/map/map.svelte";
+	import Map from '$lib/map/map.svelte';
 	import { onMount } from 'svelte';
 
 	let isDragging = false;
@@ -39,6 +39,32 @@
 		isDragging = false;
 	};
 
+	const handleTouchStart = (event) => {
+		if (event.touches.length === 1) {
+			isDragging = true;
+			startX = event.touches[0].clientX;
+			startY = event.touches[0].clientY;
+			initX = x;
+			initY = y;
+		}
+		event.preventDefault();
+	};
+
+	const handleTouchMove = (event) => {
+		if (isDragging && event.touches.length === 1) {
+			currentX = event.touches[0].clientX;
+			currentY = event.touches[0].clientY;
+			offsetX = currentX - startX;
+			offsetY = currentY - startY;
+			x = initX + offsetX;
+			y = initY + offsetY;
+		}
+	};
+
+	const handleTouchEnd = () => {
+		isDragging = false;
+	};
+
 	const handleScroll = (event) => {
 		if (event.deltaY < 0) {
 			zoom *= 1.1;
@@ -54,12 +80,27 @@
 		window.addEventListener('mousemove', handleMouseMove);
 		window.addEventListener('mouseup', handleMouseUp);
 		window.addEventListener('wheel', handleScroll);
+		window.addEventListener('touchmove', handleTouchMove);
+		window.addEventListener('touchend', handleTouchEnd);
 	});
+
+	const handleMouseDownTouchStart = (event) => {
+		if (event.type === 'mousedown') {
+			handleMouseDown(event);
+		} else if (event.type === 'touchstart') {
+			handleTouchStart(event);
+		}
+	};
 </script>
 
 <!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
 
-<div class="w-screen h-screen mx-auto flex justify-center items-center overflow-hidden" on:mousedown={handleMouseDown}>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div
+	class="w-screen h-screen mx-auto flex justify-center items-center overflow-hidden"
+	on:mousedown={handleMouseDownTouchStart}
+	on:touchstart={handleMouseDownTouchStart}
+>
 	<div class="fixed" style="transform: scale({zoom}); left: {x}px; top: {y}px;">
 		<Map />
 	</div>
