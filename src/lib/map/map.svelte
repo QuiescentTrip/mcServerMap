@@ -1,49 +1,29 @@
 <script>
-    import { onMount } from 'svelte';
-  
-    let mapImages = [];
-  
-    onMount(async () => {
+  import { onMount } from 'svelte';
+
+  let mapImages = [];
+
+  onMount(async () => {
       // Fetch image filenames from the server
       const response = await fetch('/map-files.json');
       const files = await response.json();
-  
+
       // Parse filenames to get coordinates
       mapImages = files.map(file => {
-        const [x, y] = file.replace('.png', '').split(',').map(Number);
-        return { x, y, src: `/map/${file}` };
+          const [x, y] = file.replace('.png', '').split(',').map(Number);
+          return { x, y, src: `/map/${file}` };
       });
-    });
-  
-    function handleClick(x, y) {
-      alert(`You clicked on the tile at coordinates: (${x}, ${y})`);
-    }
-  </script>
+  });
 
-  <style>
-    .map-container {
-      position: relative;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, 100px); /* Adjust tile size here */
-      gap: 0;
-    }
-    .map-tile {
-      position: relative;
-      width: 100px; /* Adjust tile size here */
-      height: 100px; /* Adjust tile size here */
-    }
-    .map-tile img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  </style>
-  
-  <div class="map-container">
-    {#each mapImages as { x, y, src }}
-      <div class="map-tile" style="grid-row: {y - 1}; grid-column: {x + 1}" on:click={() => handleClick(x, y)}>
-        <img src={src} alt={`Tile at (${x}, ${y})`} />
+  function handleClick(x, y) {
+      alert(`You clicked on the tile at coordinates: (${x}, ${y})`);
+  }
+</script>
+
+<div class="relative grid gap-0 row-span-full" style="grid-template-columns: repeat(auto-fill);">
+  {#each mapImages as { x, y, src }}
+      <div class="relative w-24 h-24" style="grid-row: {y - 1}; grid-column: {x + 1}">
+          <img src={src} alt={`Tile at (${x}, ${y})`} class="w-full h-full object-cover" />
       </div>
-    {/each}
-  </div>
-  
+  {/each}
+</div>
