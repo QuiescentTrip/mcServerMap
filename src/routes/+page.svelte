@@ -1,6 +1,14 @@
 <script lang="ts">
 	import Map from '$lib/map/map.svelte';
 	import { onMount } from 'svelte';
+	import mapdata from '$lib/map/map-files.json';
+
+	let currentBiome = 'overworld';
+	let currentLayer = 'day';
+
+	const biomes = Object.keys(mapdata);
+	let layers = Object.keys(mapdata[currentBiome]);
+	$: layers = Object.keys(mapdata[currentBiome]);
 
 	let isDragging = false;
 	let startX = 0;
@@ -91,6 +99,15 @@
 			handleTouchStart(event);
 		}
 	};
+	function changeBiome(biome) {
+		currentBiome = biome;
+		if (currentBiome == 'the_nether') {
+			currentLayer = 'biome';
+		} else {
+			currentLayer = 'day';
+		}
+	}
+	$: console.log(currentBiome);
 </script>
 
 <!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
@@ -102,6 +119,22 @@
 	on:touchstart={handleMouseDownTouchStart}
 >
 	<div class="fixed" style="transform: scale({zoom}); left: {x}px; top: {y}px;">
-		<Map />
+		<Map biome={currentBiome} layer={currentLayer} />
+	</div>
+	<div
+		class="z-50 rounded-xl fixed bottom-20 scale-[2] flex flex-row bg-gray-800 text-white p-4 space-x-4"
+	>
+		{#each biomes as biome}
+			<button on:click={() => changeBiome(biome)} class="px-4 py-2 hover:bg-gray-700 rounded"
+				>{biome}</button
+			>
+		{/each}
+	</div>
+	<div class="z-50 rounded-xl fixed left-2 flex flex-col bg-gray-800 text-white p-4 space-x-4">
+		{#each layers as layer}
+			<button on:click={() => (currentLayer = layer)} class="px-4 py-2 hover:bg-gray-700 rounded"
+				>{layer}</button
+			>
+		{/each}
 	</div>
 </div>

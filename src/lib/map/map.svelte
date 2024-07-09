@@ -1,23 +1,21 @@
-<script>
-	import { onMount } from 'svelte';
-
+<script lang="ts">
+	import mapfiles from './map-files.json';
+	export let biome = 'overworld';
+	export let layer = 'day';
 	let mapImages = [];
+	console.log(mapfiles);
 
-	onMount(async () => {
-		// Fetch image filenames from the server
-		const response = await fetch('/map-files.json');
-		const files = await response.json();
-
+	async function fetchMapImages(biome, layer) {
+		let biomeJson = mapfiles[biome];
+		let layerJson = biomeJson[layer];
 		// Parse filenames to get coordinates
-		mapImages = files.map((file) => {
+		mapImages = layerJson.map((file) => {
 			const [x, y] = file.replace('.png', '').split(',').map(Number);
-			return { x, y, src: `/map/${file}` };
+			return { x, y, src: `/map/${biome}/${layer}/${file}` };
 		});
-	});
-
-	function handleClick(x, y) {
-		alert(`You clicked on the tile at coordinates: (${x}, ${y})`);
 	}
+	$: fetchMapImages(biome, layer);
+	$: console.log(biome);
 </script>
 
 <div class="relative grid gap-0 row-span-full" style="grid-template-columns: repeat(auto-fill);">

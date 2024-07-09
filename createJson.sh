@@ -1,22 +1,53 @@
 #!/bin/bash
 
-# Define the directory containing the files
-map_dir="./static/map/"
-output_file="./static/map-files.json"
+# Navigate to the map directory
+cd ./static/map
 
-# Check if the directory exists
-if [ ! -d "$map_dir" ]; then
-  echo "Directory $map_dir does not exist."
-  exit 1
-fi
+# Initialize an empty JSON object
+json_output="{"
 
-# Get all filenames in the directory
-filenames=$(ls "$map_dir")
+# Function to process primary directories
+process_primary_directory() {
+  local dir_path="$1"
+  local dir_name=$(basename "$dir_path")
 
-# Convert filenames to JSON array format
-json_array=$(printf '%s\n' "$filenames" | jq -R . | jq -s .)
+  # Initialize a temporary JSON object for the current directory
+  local temp_json="\"$dir_name\": {"
 
-# Write the JSON array to the output file
-echo "$json_array" > "$output_file"
+  # Find subdirectories
+  local subdirs=$(find "$dir_path" -mindepth 1 -maxdepth 1 -type d)
 
-echo "Filenames have been listed in $output_file."
+  for subdir in $subdirs; do
+    local subdir_name=$(basename "$subdir")
+    temp_json+="\"$subdir_name\": ["
+
+    # Find .png files in the current subdirectory
+    local files=$(find "$subdir" -maxdepth 1 -type f -name "*.png" | sed 's|^.*/||')
+
+    for file in $files; do
+      temp_json+="\"$file\","
+    done
+
+    # Remove the trailing comma and close the JSON array
+    temp_json="${temp_json%,}]"
+    temp_json+=","
+  done
+
+  # Remove the trailing comma and close the JSON object for the current directory
+  temp_json="${temp_json%,}},"
+  json_output+="$temp_json"
+}
+
+# Process the primary directories (overworld, the_nether, etc.)
+for primary_dir in */ ; do
+  process_primary_directory "$primary_dir"
+done
+
+# Remove the trailing comma and close the main JSON object
+json_output="${json_output%,}}"
+
+# Write the JSON output to the map-files.json file
+echo "$json_output" > ../map-files.json
+
+# Print a message indicating the script has completed
+echo "map-files.json has been created in the ./static/ directory."
