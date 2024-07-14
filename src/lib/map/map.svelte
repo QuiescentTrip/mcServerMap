@@ -3,25 +3,46 @@
 	export let biome = 'overworld';
 	export let layer = 'day';
 	let mapImages = [];
-	console.log(mapfiles);
-
+	let grid = new Array(20).fill(null).map(() => new Array(20).fill(null));
 	async function fetchMapImages(biome, layer) {
+		grid = new Array(20).fill(null).map(() => new Array(20).fill(null));
 		let biomeJson = mapfiles[biome];
 		let layerJson = biomeJson[layer];
 		// Parse filenames to get coordinates
 		mapImages = layerJson.map((file) => {
 			const [x, y] = file.replace('.png', '').split(',').map(Number);
-			return { x, y, src: `/map/${biome}/${layer}/${file}` };
+			grid[x + grid[0].length / 2][y + grid.length / 2] = {
+				x,
+				y,
+				src: `/map/${biome}/${layer}/${file}`
+			};
 		});
+		console.log(grid);
 	}
 	$: fetchMapImages(biome, layer);
-	$: console.log(biome);
 </script>
 
-<div class="relative grid gap-0 row-span-full" style="grid-template-columns: repeat(auto-fill);">
-	{#each mapImages as { x, y, src }}
-		<div class="relative w-24 h-24" style="grid-row: {y - 1}; grid-column: {x - 1}">
-			<img {src} alt={`Tile at (${x}, ${y})`} class="w-full h-full object-cover" />
-		</div>
+<div
+	class="relative grid gap-0 row-span-full"
+	style="grid-template-columns: repeat(auto-fill, 96px);"
+>
+	{#each grid as column, columnIndex}
+		{#each Array(column.length) as _, rowIndex}
+			{#if grid[columnIndex][rowIndex] != null}
+				<div class="relative w-24 h-24" style="grid-row: {rowIndex}; grid-column: {columnIndex};">
+					<button>
+						<img
+							src={grid[columnIndex][rowIndex].src}
+							alt="Tile at (${columnIndex + 1}, ${rowIndex + 1})"
+							class="w-full h-full object-cover"
+						/>
+					</button>
+				</div>
+			{:else}
+				<div class="relative w-24 h-24" style="grid-row: {rowIndex}; grid-column: {columnIndex};">
+					<div class="w-full h-full object-cover"></div>
+				</div>
+			{/if}
+		{/each}
 	{/each}
 </div>

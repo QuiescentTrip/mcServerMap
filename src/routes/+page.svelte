@@ -7,8 +7,10 @@
 	let currentLayer = 'day';
 
 	const biomes = Object.keys(mapdata);
-	let layers = Object.keys(mapdata[currentBiome]);
-	$: layers = Object.keys(mapdata[currentBiome]);
+	let layers: string | undefined = Object.keys(mapdata[currentBiome]);
+	$: layers = Object.keys(mapdata[currentBiome]).filter(
+		(key) => mapdata[currentBiome][key].length > 0
+	);
 
 	let isDragging = false;
 	let startX = 0;
@@ -100,6 +102,9 @@
 		}
 	};
 	function changeBiome(biome) {
+		zoom = 10;
+		x = 0;
+		y = 0;
 		currentBiome = biome;
 		if (currentBiome == 'the_nether') {
 			currentLayer = 'biome';
@@ -122,7 +127,7 @@
 		<Map biome={currentBiome} layer={currentLayer} />
 	</div>
 	<div
-		class="z-50 rounded-xl fixed bottom-20 scale-[2] flex flex-row bg-gray-800 text-white p-4 space-x-4"
+		class="z-50 rounded-xl fixed bottom-20 scale-[2] flex flex-row justify-center items-center text-center bg-gray-800 text-white p-4 space-x-4"
 	>
 		{#each biomes as biome}
 			<button on:click={() => changeBiome(biome)} class="px-4 py-2 hover:bg-gray-700 rounded"
@@ -130,10 +135,13 @@
 			>
 		{/each}
 	</div>
-	<div class="z-50 rounded-xl fixed left-2 flex flex-col bg-gray-800 text-white p-4 space-x-4">
+	<div
+		class="z-50 rounded-xl fixed left-8 flex flex-col bg-gray-800 text-white p-4 gap-3 my-auto max-h-full"
+	>
 		{#each layers as layer}
-			<button on:click={() => (currentLayer = layer)} class="px-4 py-2 hover:bg-gray-700 rounded"
-				>{layer}</button
+			<button
+				on:click={() => (currentLayer = layer)}
+				class="text-xl p-4 px-6 hover:bg-gray-700 rounded">{layer}</button
 			>
 		{/each}
 	</div>
